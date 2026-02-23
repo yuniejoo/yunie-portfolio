@@ -2,18 +2,18 @@
 
 ## Done ✓
 
+### Phase 1 — Project Setup
+- [x] Initialize Next.js + Tailwind project
+- [x] Set up folder structure and CLAUDE.md
+- [x] Create .claude/skills/ files in project
+- [x] Create agent_docs/progress.md in project
+- [x] Initialize GitHub repo
+- [x] Connect to Vercel — get live preview URL
+- [x] Install and configure Google Fonts (Figtree + IBM Plex Mono)
+
 ## In Progress
 
 ## Up Next
-
-### Phase 1 — Project Setup
-- [ ] Initialize Next.js + Tailwind project
-- [ ] Set up folder structure and CLAUDE.md
-- [ ] Create .claude/skills/ files in project
-- [ ] Create agent_docs/progress.md in project
-- [ ] Initialize GitHub repo
-- [ ] Connect to Vercel — get live preview URL
-- [ ] Install and configure Google Fonts (Figtree + IBM Plex Mono)
 
 ### Phase 2 — Design Tokens
 - [ ] Configure Tailwind theme with all color tokens (day + night)

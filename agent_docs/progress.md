@@ -2,6 +2,13 @@
 
 ## Done ✓
 
+### Phase 2 — Design Tokens
+- [x] Configure Tailwind theme with all color tokens (day + night)
+- [x] Configure CSS custom properties for theme switching
+- [x] Configure typography scale in Tailwind
+- [x] Configure spacing scale
+- [x] Verify tokens render correctly in browser
+
 ### Phase 1 — Project Setup
 - [x] Initialize Next.js + Tailwind project
 - [x] Set up folder structure and CLAUDE.md
@@ -14,13 +21,6 @@
 ## In Progress
 
 ## Up Next
-
-### Phase 2 — Design Tokens
-- [ ] Configure Tailwind theme with all color tokens (day + night)
-- [ ] Configure CSS custom properties for theme switching
-- [ ] Configure typography scale in Tailwind
-- [ ] Configure spacing scale
-- [ ] Verify tokens render correctly in browser
 
 ### Phase 3 — Base Components
 - [ ] Button component (all states: default, hover, disabled)

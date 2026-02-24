@@ -1,26 +1,291 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────────────────
+   PRIMITIVE COLORS
+   Raw palette. Never reference these directly in components.
+   Always use semantic tokens instead.
+───────────────────────────────────────────────────────── */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Blue */
+  --color-blue-25:  #F5FAFF;
+  --color-blue-50:  #EFF8FF;
+  --color-blue-100: #D1E9FF;
+  --color-blue-200: #B2DDFF;
+  --color-blue-300: #84CAFF;
+  --color-blue-400: #53B1FD;
+  --color-blue-500: #2E90FA;
+  --color-blue-600: #1570EF;
+  --color-blue-700: #175CD3;
+  --color-blue-800: #1849A9;
+  --color-blue-900: #194185;
+
+  /* Gray */
+  --color-gray-25:  #FDFDFD;
+  --color-gray-50:  #FAFAFA;
+  --color-gray-100: #F5F5F5;
+  --color-gray-200: #E9EAEB;
+  --color-gray-300: #D5D7DA;
+  --color-gray-400: #A4A7AE;
+  --color-gray-500: #717680;
+  --color-gray-600: #535862;
+  --color-gray-700: #414651;
+  --color-gray-800: #252B37;
+  --color-gray-900: #101828;
+
+  /* Blue Gray */
+  --color-blue-gray-25:  #FCFCFD;
+  --color-blue-gray-50:  #F8F9FC;
+  --color-blue-gray-100: #EAECF5;
+  --color-blue-gray-200: #D5D9EB;
+  --color-blue-gray-300: #AFB5D9;
+  --color-blue-gray-400: #717BBC;
+  --color-blue-gray-500: #4E5BA6;
+  --color-blue-gray-600: #3E4784;
+  --color-blue-gray-700: #363F72;
+  --color-blue-gray-800: #293056;
+  --color-blue-gray-900: #101323;
+
+  /* Foundation */
+  --color-white: #FFFFFF;
+  --color-black: #000000;
 }
+
+/* ─────────────────────────────────────────────────────────
+   FONT CUSTOM PROPERTIES
+   Declared on body — NOT :root — because --font-figtree and
+   --font-ibm-plex-mono are injected by next/font as classes
+   on <body>. CSS custom properties only inherit downward, so
+   :root cannot see variables set on a child element.
+   Declaring here means all descendants can use var(--font-sans).
+───────────────────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────────────────
+   SEMANTIC TOKENS — SHARED
+   Identical in both day and night themes.
+───────────────────────────────────────────────────────── */
+
+:root {
+  --color-text-heading:       #101828; /* gray/900 */
+  --color-text-body:          #535862; /* gray/600 */
+  --color-text-subtle:        #A4A7AE; /* gray/400 */
+  --color-text-muted:         #D5D7DA; /* gray/300 */
+  --color-text-white:         #FFFFFF;
+  --color-text-on-primary:    #FFFFFF;
+
+  --color-surface-main:       #FFFFFF;
+  --color-surface-subtle:     #FAFAFA; /* gray/50  */
+
+  --color-stroke-border:        #E9EAEB; /* gray/200 */
+  --color-stroke-border-subtle: #F5F5F5; /* gray/100 */
+}
+
+/* ─────────────────────────────────────────────────────────
+   SEMANTIC TOKENS — DAY THEME  (default)
+   Blue accent. Active during Calgary morning / afternoon.
+───────────────────────────────────────────────────────── */
+
+:root,
+[data-theme="day"] {
+  --color-text-primary:        #2E90FA; /* blue/500 */
+  --color-text-primary-hover:  #53B1FD; /* blue/400 */
+
+  --color-surface-dark:        #2E90FA; /* blue/500 */
+  --color-surface-dark-hover:  #53B1FD; /* blue/400 */
+
+  --color-stroke-active: #2E90FA; /* blue/500 */
+  --color-stroke-focus:  #2E90FA; /* blue/500 */
+}
+
+/* ─────────────────────────────────────────────────────────
+   SEMANTIC TOKENS — NIGHT THEME
+   Blue-gray accent. Active during Calgary evening / dawn.
+───────────────────────────────────────────────────────── */
+
+[data-theme="night"] {
+  --color-text-primary:        #3E4784; /* blue-gray/600 */
+  --color-text-primary-hover:  #717BBC; /* blue-gray/400 */
+
+  --color-surface-dark:        #4E5BA6; /* blue-gray/500 */
+  --color-surface-dark-hover:  #717BBC; /* blue-gray/400 */
+
+  --color-stroke-active: #4E5BA6; /* blue-gray/500 */
+  --color-stroke-focus:  #4E5BA6; /* blue-gray/500 */
+}
+
+/* ─────────────────────────────────────────────────────────
+   TAILWIND v4 THEME
+   Maps tokens to Tailwind utility classes via @theme inline.
+   "inline" means Tailwind generates utilities with var()
+   references, so theme switching works at runtime.
+───────────────────────────────────────────────────────── */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+
+  /* Fonts */
   --font-sans: var(--font-figtree), sans-serif;
   --font-mono: var(--font-ibm-plex-mono), monospace;
+
+  /* ── Primitive colors ──────────────────────────────────
+     Generates: bg-blue-500, text-gray-900, etc.          */
+  --color-blue-25:  var(--color-blue-25);
+  --color-blue-50:  var(--color-blue-50);
+  --color-blue-100: var(--color-blue-100);
+  --color-blue-200: var(--color-blue-200);
+  --color-blue-300: var(--color-blue-300);
+  --color-blue-400: var(--color-blue-400);
+  --color-blue-500: var(--color-blue-500);
+  --color-blue-600: var(--color-blue-600);
+  --color-blue-700: var(--color-blue-700);
+  --color-blue-800: var(--color-blue-800);
+  --color-blue-900: var(--color-blue-900);
+
+  --color-gray-25:  var(--color-gray-25);
+  --color-gray-50:  var(--color-gray-50);
+  --color-gray-100: var(--color-gray-100);
+  --color-gray-200: var(--color-gray-200);
+  --color-gray-300: var(--color-gray-300);
+  --color-gray-400: var(--color-gray-400);
+  --color-gray-500: var(--color-gray-500);
+  --color-gray-600: var(--color-gray-600);
+  --color-gray-700: var(--color-gray-700);
+  --color-gray-800: var(--color-gray-800);
+  --color-gray-900: var(--color-gray-900);
+
+  --color-blue-gray-25:  var(--color-blue-gray-25);
+  --color-blue-gray-50:  var(--color-blue-gray-50);
+  --color-blue-gray-100: var(--color-blue-gray-100);
+  --color-blue-gray-200: var(--color-blue-gray-200);
+  --color-blue-gray-300: var(--color-blue-gray-300);
+  --color-blue-gray-400: var(--color-blue-gray-400);
+  --color-blue-gray-500: var(--color-blue-gray-500);
+  --color-blue-gray-600: var(--color-blue-gray-600);
+  --color-blue-gray-700: var(--color-blue-gray-700);
+  --color-blue-gray-800: var(--color-blue-gray-800);
+  --color-blue-gray-900: var(--color-blue-gray-900);
+
+  --color-white: var(--color-white);
+  --color-black: var(--color-black);
+
+  /* ── Semantic colors ───────────────────────────────────
+     Theme-aware. Change value when data-theme switches.
+     Generates: text-text-heading, bg-surface-main, etc.  */
+  --color-text-heading:       var(--color-text-heading);
+  --color-text-body:          var(--color-text-body);
+  --color-text-subtle:        var(--color-text-subtle);
+  --color-text-muted:         var(--color-text-muted);
+  --color-text-white:         var(--color-text-white);
+  --color-text-on-primary:    var(--color-text-on-primary);
+  --color-text-primary:       var(--color-text-primary);
+  --color-text-primary-hover: var(--color-text-primary-hover);
+
+  --color-surface-main:        var(--color-surface-main);
+  --color-surface-subtle:      var(--color-surface-subtle);
+  --color-surface-dark:        var(--color-surface-dark);
+  --color-surface-dark-hover:  var(--color-surface-dark-hover);
+
+  --color-stroke-border:        var(--color-stroke-border);
+  --color-stroke-border-subtle: var(--color-stroke-border-subtle);
+  --color-stroke-active:        var(--color-stroke-active);
+  --color-stroke-focus:         var(--color-stroke-focus);
+
+  /* ── Spacing scale ─────────────────────────────────────
+     Generates: p-1, m-4, gap-8, w-12, etc.              */
+  --spacing-0:  0px;
+  --spacing-1:  4px;
+  --spacing-2:  8px;
+  --spacing-3:  12px;
+  --spacing-4:  16px;
+  --spacing-5:  20px;
+  --spacing-6:  24px;
+  --spacing-7:  28px;
+  --spacing-8:  32px;
+  --spacing-9:  36px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+
+  /* ── Typography scale ──────────────────────────────────
+     Generates: text-xs, text-sm, text-base, etc.        */
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-lg:   18px;
+  --text-xl:   20px;
+  --text-2xl:  24px;
+  --text-3xl:  28px;
+  --text-4xl:  32px;
+  --text-5xl:  42px;
+  --text-6xl:  52px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ─────────────────────────────────────────────────────────
+   BASE STYLES
+───────────────────────────────────────────────────────── */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  --font-sans: var(--font-figtree), sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), monospace;
+  background: var(--color-surface-main);
+  color: var(--color-text-body);
   font-family: var(--font-sans);
 }
+
+/* ─────────────────────────────────────────────────────────
+   REUSABLE UTILITY — IMAGE PLACEHOLDER
+   Used for all image areas until real images are provided.
+   Applied via className="placeholder-image".
+───────────────────────────────────────────────────────── */
+
+.placeholder-image {
+  background-image:
+    linear-gradient(45deg,  var(--color-stroke-border) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--color-stroke-border) 25%, transparent 25%),
+    linear-gradient(45deg,  transparent 75%, var(--color-stroke-border) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--color-stroke-border) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  background-color: var(--color-surface-subtle);
+}
+
+/* ─────────────────────────────────────────────────────────
+   NAMED TEXT STYLES
+   Use these class names directly on elements in components.
+   Figtree → titles, headings, body.
+   IBM Plex Mono → labels (always uppercase by design).
+───────────────────────────────────────────────────────── */
+
+/* Figtree — Titles */
+.title-1 { font-family: var(--font-sans); font-size: 52px; line-height: 56px; font-weight: 700; }
+.title-2 { font-family: var(--font-sans); font-size: 42px; line-height: 48px; font-weight: 700; }
+
+/* Figtree — Headings */
+.heading-1        { font-family: var(--font-sans); font-size: 32px; line-height: 40px; font-weight: 600; }
+.heading-1-bold   { font-family: var(--font-sans); font-size: 32px; line-height: 40px; font-weight: 700; }
+.heading-2        { font-family: var(--font-sans); font-size: 24px; line-height: 32px; font-weight: 600; }
+.heading-2-bold   { font-family: var(--font-sans); font-size: 24px; line-height: 32px; font-weight: 700; }
+.heading-3        { font-family: var(--font-sans); font-size: 20px; line-height: 30px; font-weight: 600; }
+.heading-3-bold   { font-family: var(--font-sans); font-size: 20px; line-height: 30px; font-weight: 700; }
+.heading-4        { font-family: var(--font-sans); font-size: 18px; line-height: 28px; font-weight: 600; }
+.heading-4-bold   { font-family: var(--font-sans); font-size: 18px; line-height: 28px; font-weight: 700; }
+
+/* Figtree — Body */
+.body-1          { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400; }
+.body-1-medium   { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 500; }
+.body-1-semibold { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 600; }
+.body-2          { font-family: var(--font-sans); font-size: 14px; line-height: 22px; font-weight: 400; }
+.body-2-medium   { font-family: var(--font-sans); font-size: 14px; line-height: 22px; font-weight: 500; }
+.body-2-semibold { font-family: var(--font-sans); font-size: 14px; line-height: 22px; font-weight: 600; }
+
+/* IBM Plex Mono — Labels (always uppercase) */
+.label-1          { font-family: var(--font-mono); font-size: 16px; line-height: 24px; font-weight: 400; text-transform: uppercase; }
+.label-1-medium   { font-family: var(--font-mono); font-size: 16px; line-height: 24px; font-weight: 500; text-transform: uppercase; }
+.label-1-semibold { font-family: var(--font-mono); font-size: 16px; line-height: 24px; font-weight: 600; text-transform: uppercase; }
+.label-2          { font-family: var(--font-mono); font-size: 14px; line-height: 22px; font-weight: 400; text-transform: uppercase; }
+.label-2-medium   { font-family: var(--font-mono); font-size: 14px; line-height: 22px; font-weight: 500; text-transform: uppercase; }
+.label-2-semibold { font-family: var(--font-mono); font-size: 14px; line-height: 22px; font-weight: 600; text-transform: uppercase; }
+.label-3          { font-family: var(--font-mono); font-size: 12px; line-height: 18px; font-weight: 400; text-transform: uppercase; }
+.label-3-medium   { font-family: var(--font-mono); font-size: 12px; line-height: 18px; font-weight: 500; text-transform: uppercase; }
+.label-3-semibold { font-family: var(--font-mono); font-size: 12px; line-height: 18px; font-weight: 600; text-transform: uppercase; }

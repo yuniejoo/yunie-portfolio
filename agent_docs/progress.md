@@ -2,6 +2,11 @@
 
 ## Done ✓
 
+### Phase 3 — Base Components
+- [x] Button component (primary + secondary types, default/hover/selected states, fullWidth prop)
+- [x] NavBar component (fixed, frosted glass, logo slot + nav links, active page detection, mobile dropdown with chevron toggle, scroll hide/show behavior)
+- [x] Tag component (variant: minimal/outlined, color: subtle/primary, display-only span, label-2-medium typography)
+
 ### Phase 2 — Design Tokens
 - [x] Configure Tailwind theme with all color tokens (day + night)
 - [x] Configure CSS custom properties for theme switching
@@ -78,3 +83,10 @@
 - Hero section: placeholder slot during layout phase, built separately and slotted in Phase 5
 - Theme system: CSS custom properties scoped to data-theme attribute on html element
 - Fonts: Figtree (UI/content) + IBM Plex Mono (system/structural text)
+- Button: two types (primary uses Label 1 / 16px, secondary uses Label 2 / 14px). No focus/disabled states — personal portfolio, not SaaS. fullWidth prop controls hug vs fill behaviour.
+- NavBar: uses Next.js `<Link>` for nav items (not Button component) — semantic correctness + different default/hover tokens than Button (text-body vs text-muted, text-primary vs text-primary-hover). MENU toggle uses `<button>` directly to support aria-expanded + aria-label. logo.svg not yet created — Node placeholder at 96×32px until added.
+- NavBar background: frosted glass via inline style (rgba(255,255,255,0.8) + backdrop-filter: blur(12px)) — not bg-surface-main token, because opacity control requires rgba().
+- NavBar positioning: fixed (not sticky) — layout.tsx body has pt-16 (64px) to compensate.
+- NavBar scroll behavior: hides on scroll down (>10px threshold), reappears on scroll up. useEffect + useRef(lastScrollY) tracks direction. transition-transform duration-200 ease-in-out. passive scroll listener for performance.
+- Mobile dropdown: right-aligned links, pb-4 only (no top padding), no background (inherits frosted glass from nav parent).
+- Tag: `<span>` element (inline text content). outlined variant uses `inline-block` to ensure border-radius + background render correctly. Border color (stroke-border) is shared between both color modes — only fill and text differ.

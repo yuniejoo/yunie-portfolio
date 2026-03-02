@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import NavBar from "@/src/components/NavBar";
 
 const figtree = Figtree({
   variable: "--font-figtree",
@@ -26,8 +27,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${figtree.variable} ${ibmPlexMono.variable} antialiased`}
+        className={`${figtree.variable} ${ibmPlexMono.variable} antialiased pt-16`}
       >
+        <NavBar />
         {children}
       </body>
     </html>

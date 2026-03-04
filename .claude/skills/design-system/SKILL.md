@@ -30,10 +30,14 @@ The hero drives the two-theme system: day (morning/afternoon, blue primary) and 
 - Mobile-first always: build for 375px first, then 768px, then 1280px
 - Never use arbitrary spacing values — only use the spacing scale defined in `globals.css`
 
+## Shadow Rules
+- No drop shadows on components or cards — whitespace is the primary separation tool
+- One exception: ProjectCover uses `--shadow-card` (1px 1px 1px rgba(233,234,235,0.5)) to reinforce the physical card-stack metaphor
+- No other component may use a shadow without an explicit decision logged here
+
 ## Interaction Rules
 - All transitions: `transition: all 0.2s ease` — no slower, no faster
 - Hover on cards: `translateY(-2px)` maximum — never dramatic movement
-- All interactive elements must have visible focus states (2px solid accent color, 2px offset)
 - Motion must mean something — no decorative animations
 
 ## Semantic HTML Rules

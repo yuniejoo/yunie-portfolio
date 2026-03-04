@@ -78,6 +78,14 @@
 
   --color-stroke-border:        #E9EAEB; /* gray/200 */
   --color-stroke-border-subtle: #F5F5F5; /* gray/100 */
+
+  /* Gradients */
+  --gradient-cover-blue:   linear-gradient(135deg, #F5FBFF 0%, #E0F2FE 100%);
+  --gradient-cover-indigo: linear-gradient(135deg, #F5F8FF 0%, #E0EAFF 100%);
+  --gradient-cover-purple: linear-gradient(135deg, #FAFAFF 0%, #EBEAFE 100%);
+
+  /* Shadows */
+  --shadow-card: 1px 1px 1px rgba(233, 234, 235, 0.5);
 }
 
 /* ─────────────────────────────────────────────────────────

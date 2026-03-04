@@ -6,6 +6,10 @@
 - [x] Button component (primary + secondary types, default/hover/selected states, fullWidth prop)
 - [x] NavBar component (fixed, frosted glass, logo slot + nav links, active page detection, mobile dropdown with chevron toggle, scroll hide/show behavior)
 - [x] Tag component (variant: minimal/outlined, color: subtle/primary, display-only span, label-2-medium typography)
+- [x] Divider component (full-width asterisk row, 20 asterisks desktop / 10 mobile, IBM Plex Mono Regular, --color-text-subtle)
+- [x] ProjectCover component (blue/indigo/purple gradient, isHovered title color switch, Tag + heading + description)
+- [x] ProjectImgFrame component (white gradient outer frame, checkerboard inner area, 400×400px)
+- [x] ProjectItem component (card-deck stack, 2-phase fan hover animation, per-card lift, cover render prop, ResizeObserver width tracking)
 
 ### Phase 2 — Design Tokens
 - [x] Configure Tailwind theme with all color tokens (day + night)
@@ -28,12 +32,10 @@
 ## Up Next
 
 ### Phase 3 — Base Components
-- [ ] Button component (all states: default, hover, disabled)
-- [ ] Typography components (headings h1–h4, body, label)
-- [ ] Content type tag (CASE STUDY, SNAPSHOTS, THOUGHTS)
-- [ ] Dot separator component
-- [ ] Image placeholder (checkerboard pattern)
-- [ ] Navigation component (wordmark + items)
+- [ ] Project Card component
+- [ ] Footer component (placeholder — to be revisited)
+- [ ] Work Experience Row component
+- [ ] Work Experience Section component (composed of Work Experience Row, used on homepage + about page)
 
 ### Phase 4 — Page Layouts
 - [ ] Homepage layout (hero slot + intro + work cards + experience + footer)
@@ -90,3 +92,10 @@
 - NavBar scroll behavior: hides on scroll down (>10px threshold), reappears on scroll up. useEffect + useRef(lastScrollY) tracks direction. transition-transform duration-200 ease-in-out. passive scroll listener for performance.
 - Mobile dropdown: right-aligned links, pb-4 only (no top padding), no background (inherits frosted glass from nav parent).
 - Tag: `<span>` element (inline text content). outlined variant uses `inline-block` to ensure border-radius + background render correctly. Border color (stroke-border) is shared between both color modes — only fill and text differ.
+- Typography: No separate React components needed — .heading-1, .body-1, .label-2 etc. are CSS classes in globals.css applied directly to semantic HTML elements (h1, p, span, etc.).
+- Button default state text: corrected to --color-text-body — --color-text-muted was incorrectly introduced during implementation.
+- ProjectCover gradients: three color variants (blue, indigo, purple) added as --gradient-cover-blue/indigo/purple tokens in globals.css. Not Tailwind utilities — used as raw CSS values.
+- Shadow exception: --shadow-card added to globals.css. Only permitted shadow in the system. Used exclusively on ProjectCover to reinforce card-stack metaphor.
+- ProjectItem cover prop: render prop pattern `(hovered: boolean) => ReactNode` — allows the cover to receive ProjectItem's internal hover state (for title color change) without prop drilling or context.
+- ProjectItem fan formula: `fanStart = containerWidth × 0.17`, `fanSpread = (containerWidth - fanStart - 440) / (count - 1)`. Last frame's right edge lands exactly at containerWidth.
+- ProjectItem width measurement: `getBoundingClientRect().width` read immediately on mount (before ResizeObserver fires) to avoid zero-width fan on first hover.

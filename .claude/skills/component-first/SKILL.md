@@ -13,6 +13,11 @@ Before writing any new UI code, you must audit what already exists in the projec
 
 Before building any component, section, or page, run through this sequence:
 
+**Step 0 — Confirm design is approved**
+```
+A component should only be built in Claude Code after it has been reviewed and approved in Claude.ai. Never implement from a Figma file directly without a written spec.
+```
+
 **Step 1 — Read the components directory**
 ```
 Read the entire /components directory.

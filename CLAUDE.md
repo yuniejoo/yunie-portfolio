@@ -30,6 +30,11 @@ Goal: Show Yunie as a structural thinker who designs systems, not just screens.
 - Commit after each completed component or page layout
 - Never delete progress.md entries — mark as Done ✓ instead
 
+## Workflow
+- Claude.ai — design review, planning, decisions, prompt writing
+- Claude Code — implementation only, from approved specs
+- Never make visual design decisions in code. If something is ambiguous, ask.
+
 ## Supporting Docs
 Before starting any session, check which of these are relevant and read them:
 - `agent_docs/progress.md` — current build status, what's done, what's next, known issues

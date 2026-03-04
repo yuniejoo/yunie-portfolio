@@ -11,9 +11,10 @@
   Hovering any individual card lifts it to the front.
 
   MOBILE (below 768px):
-  Cards are laid out in a horizontal scroll track. The cover is first, followed by
-  image frames. Swiping left/right advances or retreats through the cards. The next
-  card's edge peeks into view on the right — no dots needed, the peek is the affordance.
+  Cards render as a physical pile — stacked on top of each other. The active card sits
+  flat on top; the cards behind it are offset down and slightly rotated to suggest depth.
+  Swiping left/right drags the top card in real time; releasing past 80px flies it off
+  and promotes the card behind it. Wrap-around navigation — last card loops back to first.
 
   The two modes are completely separate render paths — no shared interaction state.
   Breakpoint is driven by JS (containerWidth) so layout and state are always in sync.
@@ -51,7 +52,6 @@ const COVER_ROTATIONS = [-2, -3, -1.5] as const
 // MOBILE CARD SIZING CONSTANTS
 // ─────────────────────────────────────────────────────────
 const CARD_MAX = 414       // largest a mobile card can be (matches cover's max)
-const TRACK_PADDING = 20   // left margin before the first card on mobile
 
 
 // ─────────────────────────────────────────────────────────
@@ -167,6 +167,28 @@ export default function ProjectItem({ cover, images, rotationSeed }: ProjectItem
   // Stores the X position where a touch started, so we can measure the swipe distance.
   const touchStartX = useRef(0)
 
+  // Drag offset written directly to DOM via CSS custom properties (--drag-x, --drag-rot).
+  // A ref avoids React re-renders on every touchmove frame; CSS vars update the card live.
+  const dragXRef = useRef(0)
+
+  // True during the exit/snap-back transition — blocks new swipe input.
+  const [isAnimating, setIsAnimating] = useState(false)
+
+  // Direction of the current exit animation. null = snap-back or at rest.
+  const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null)
+
+  // Which direction the peek cards face. +1 = show upcoming cards (forward),
+  // -1 = show already-seen cards (backward). Flips with each swipe direction change
+  // so the swiped card always lands at back position (2 steps behind the new top).
+  const [midOffset, setMidOffset] = useState<1 | -1>(1)
+
+  // Ref to the mobile animation timeout so it can be cancelled on unmount.
+  const mobileTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // true when viewport is below 768px — matches NavBar's CSS md: breakpoint.
+  // Initialized false (desktop) and corrected on mount via matchMedia.
+  const [isMobile, setIsMobile] = useState(false)
+
 
   // ── RESIZE OBSERVER ─────────────────────────────────────
   // Reads the container width immediately on mount (for the first render),
@@ -191,30 +213,42 @@ export default function ProjectItem({ cover, images, rotationSeed }: ProjectItem
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      if (mobileTimeoutRef.current) clearTimeout(mobileTimeoutRef.current)
     }
   }, [])
 
-
   // ── BREAKPOINT DETECTION ─────────────────────────────────
-  // Drive layout from JS so state and rendering are always in sync.
-  // containerWidth > 0 guard prevents a false "mobile" reading before
-  // the first measurement fires (containerWidth starts at 0).
-  const isMobile = containerWidth > 0 && containerWidth < 768
+  // Fires only when the viewport crosses the 768px boundary — not on every resize pixel.
+  // max-width: 767px matches Tailwind's md: breakpoint (min-width: 768px) exactly.
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)')
+    setIsMobile(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
 
   // ── MOBILE CARD SIZING ───────────────────────────────────
   // Cards are 85% of container width, clamped between 280px and 414px.
   // `Math.max(..., 280)` sets the floor. `Math.min(..., CARD_MAX)` sets the ceiling.
   const cardSize = Math.min(Math.max(containerWidth * 0.85, 280), CARD_MAX)
-  const cardGap = containerWidth * 0.04
   const totalCards = 1 + images.length  // 1 cover + N image frames
 
 
-  // ── RESET ACTIVE INDEX ON BREAKPOINT SWITCH ──────────────
-  // If the user rotates their device (mobile ↔ desktop), reset the mobile
-  // swipe position so we don't land in a broken mid-animation state.
+  // ── RESET MOBILE STATE ON BREAKPOINT SWITCH ──────────────
+  // If the user rotates their device (mobile ↔ desktop), reset all mobile
+  // interaction state so we don't land in a broken mid-animation state.
   useEffect(() => {
+    dragXRef.current = 0
+    if (containerRef.current) {
+      containerRef.current.style.setProperty('--drag-x', '0px')
+      containerRef.current.style.setProperty('--drag-rot', '0deg')
+    }
     setActiveIndex(0)
+    setIsAnimating(false)
+    setExitDir(null)
+    setMidOffset(1)
   }, [isMobile])
 
 
@@ -267,88 +301,212 @@ export default function ProjectItem({ cover, images, rotationSeed }: ProjectItem
 
   // ── MOBILE TOUCH HANDLERS ────────────────────────────────
 
-  // Record where the finger touched down.
+  // Record where the finger touched down. Ignored while an animation is running.
   function handleTouchStart(e: React.TouchEvent) {
+    if (isAnimating) return
     touchStartX.current = e.touches[0].clientX
   }
 
-  // On lift, measure how far the finger travelled.
-  // > 50px right-to-left = swipe left = advance to next card.
-  // > 50px left-to-right = swipe right = go back to previous card.
-  // 50px threshold prevents accidental triggers on small nudges.
-  function handleTouchEnd(e: React.TouchEvent) {
-    const delta = touchStartX.current - e.changedTouches[0].clientX
-    if (delta > 50) {
-      setActiveIndex(i => Math.min(i + 1, totalCards - 1))
-    } else if (delta < -50) {
-      setActiveIndex(i => Math.max(i - 1, 0))
+  // Track finger in real time — write translate and tilt directly to CSS custom properties.
+  // No React state update → no re-render per frame. The card follows the finger via CSS.
+  function handleTouchMove(e: React.TouchEvent) {
+    if (isAnimating) return
+    const value = e.touches[0].clientX - touchStartX.current
+    const tilt = Math.min(Math.max(value * 0.04, -12), 12)
+    dragXRef.current = value
+    const el = containerRef.current
+    if (el) {
+      el.style.setProperty('--drag-x', `${value}px`)
+      el.style.setProperty('--drag-rot', `${tilt}deg`)
     }
   }
 
-  // ── MOBILE TRACK OFFSET ──────────────────────────────────
-  // The track shifts left by one card-width + gap for each step.
-  // No offset when activeIndex = 0 — the cover sits at TRACK_PADDING from the left.
-  // `willChange: transform` hints to the browser to GPU-accelerate this animation.
-  const trackOffset = activeIndex * (cardSize + cardGap)
+  // On lift: past 80px threshold → exit shuffle. Below → snap back.
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (isAnimating) return
+    const delta = e.changedTouches[0].clientX - touchStartX.current
+    if (Math.abs(delta) > 80) {
+      // Threshold met — zero the ref so isDragging reads false on next render.
+      // CSS vars stay at drag position so the exit transition starts from where
+      // the finger released, not from 0. They're cleared in the timeout callback.
+      const dir: 'left' | 'right' = delta < 0 ? 'left' : 'right'
+      dragXRef.current = 0
+      setIsAnimating(true)
+      setExitDir(dir)
+      mobileTimeoutRef.current = setTimeout(() => {
+        const el = containerRef.current
+        if (el) {
+          el.style.setProperty('--drag-x', '0px')
+          el.style.setProperty('--drag-rot', '0deg')
+        }
+        setActiveIndex(i =>
+          dir === 'left' ? (i + 1) % totalCards : (i - 1 + totalCards) % totalCards,
+        )
+        setMidOffset(dir === 'left' ? 1 : -1)
+        setIsAnimating(false)
+        setExitDir(null)
+      }, 220)
+    } else {
+      // Below threshold — snap back to center. CSS vars cleared in the timeout
+      // callback so the at-rest transform reads 0 after the snap transition ends.
+      dragXRef.current = 0
+      setIsAnimating(true)
+      mobileTimeoutRef.current = setTimeout(() => {
+        const el = containerRef.current
+        if (el) {
+          el.style.setProperty('--drag-x', '0px')
+          el.style.setProperty('--drag-rot', '0deg')
+        }
+        setIsAnimating(false)
+      }, 200)
+    }
+  }
 
 
   // ── RENDER ───────────────────────────────────────────────
 
   // ── MOBILE LAYOUT ──────────────────────────────────────
   // Completely separate render path — no overlap with desktop logic.
+  // Cards render as a physical pile. Swiping shuffles the top card off with a
+  // rotate+fade arc; the card cycles to the back of the deck (never disappears).
   if (isMobile) {
+    // Build the ordered card array: cover at index 0, image frames at 1–N.
+    // cover() is called with false — no hover state on touch.
+    const allCards = [cover(false), ...images]
+    const total = allCards.length
+
+    // Which cards are at each stack position — always derived fresh from activeIndex.
+    const topIdx  = activeIndex % total
+    const midIdx  = ((activeIndex + midOffset) % total + total) % total
+    const backIdx = ((activeIndex + 2 * midOffset) % total + total) % total
+
+    // Position 1 (mid) X alternates by rotationSeed % 2 so each project item has
+    // its own pile personality. Seed 2 mirrors; seeds 1 and 3 use defaults.
+    const xSign = rotationSeed % 2 === 0 ? -1 : 1
+
+    // ── AT-REST TRANSFORMS for each stack position ──────────
+    const pos0 = 'translateX(0) translateY(0) rotate(0deg) scale(1)'
+    const pos1 = `translateX(${xSign * 22}px) translateY(14px) rotate(${xSign * 5}deg) scale(0.95)`
+    const pos2 = 'translateX(-16px) translateY(22px) rotate(-4deg) scale(0.90)'
+
+    // ── TOP CARD TRANSFORM ───────────────────────────────────
+    // While dragging: CSS vars --drag-x / --drag-rot written by handleTouchMove
+    //   directly to the container element — no re-render needed.
+    // During exit: fly off with combined rotate arc. Transition enabled.
+    // During snap-back: return to pos0. Transition enabled.
+    let topTransform: string
+    let topOpacity = 1
+    if (isAnimating && exitDir === 'left') {
+      topTransform = 'translateX(-120%) rotate(-18deg)'
+      topOpacity   = 0
+    } else if (isAnimating && exitDir === 'right') {
+      topTransform = 'translateX(120%) rotate(18deg)'
+      topOpacity   = 0
+    } else {
+      // Snap-back: pos0. Dragging: CSS vars carry the live position.
+      topTransform = isAnimating ? pos0 : 'translateX(var(--drag-x, 0px)) rotate(var(--drag-rot, 0deg))'
+    }
+    // Transition: on during isAnimating (exit 220ms, snap 200ms), off while dragging.
+    const topTransition = isAnimating
+      ? exitDir !== null
+        ? 'transform 220ms ease, opacity 220ms ease'
+        : 'transform 200ms ease'
+      : 'none'
+
+    // ── MID AND BACK TRANSFORMS ──────────────────────────────
+    // Only advance mid→pos0 and back→pos1 on LEFT swipes (going forward).
+    // On right swipes the incoming card was never in the visible stack, so advancing
+    // mid/back would show the wrong card briefly before activeIndex updates.
+    // Animate mid→pos0 and back→pos1 only when exit direction matches stack orientation.
+    // Left swipe + forward stack (midOffset=1): mid/back advance. ✓
+    // Right swipe + backward stack (midOffset=-1): mid/back advance. ✓
+    // Mismatched direction: no animation (wrong cards would animate). ✓
+    const shouldAnimate = isAnimating && exitDir !== null && ((exitDir === 'left') === (midOffset === 1))
+    const midTransform  = shouldAnimate ? pos0 : pos1
+    const backTransform = shouldAnimate ? pos1 : pos2
+    const stackTransition = shouldAnimate ? 'transform 220ms ease' : 'none'
+
+    // Horizontal centre — all three cards share the same left offset.
+    const cardLeft = (containerWidth - cardSize) / 2
+
     return (
-      // OUTER CONTAINER
-      // overflow: hidden clips the track so only the active card (+ peek of the next)
-      // is visible. The track itself extends beyond this boundary.
+      // STACK CONTAINER
+      // position: relative so all three card layers use absolute positioning.
+      // overflow: hidden clips cards exiting left or right.
+      // Extra height (cardSize + 28) gives the diagonally-offset back cards room
+      // to peek at the bottom without being clipped.
       <div
         ref={containerRef}
         style={{
           width: '100%',
-          // Height matches the card + a small buffer for any shadow bleed.
-          height: cardSize + 4,
-          overflow: 'hidden',
+          height: cardSize + 28,
           position: 'relative',
+          overflow: 'hidden',
         }}
         onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* TRACK
-            A flex row containing all cards. Cards are flex-shrink: 0 so they
-            never compress. Gap between cards is 4% of container width.
-            The track translates horizontally — GPU-accelerated via transform
-            (never left/margin, which would cause layout recalculation).
-            paddingLeft creates the TRACK_PADDING left margin before the first card. */}
+
+        {/* ── BACK CARD (position 2) ──────────────────────────────
+            Furthest from the viewer. Fixed offset — no alternation.
+            During exit: slides forward to the mid position. */}
         <div
           style={{
-            display: 'flex',
-            gap: cardGap,
-            paddingLeft: TRACK_PADDING,
-            transform: `translateX(-${trackOffset}px)`,
-            transition: 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-            willChange: 'transform',
+            position: 'absolute',
+            top: 0,
+            left: cardLeft,
+            width: cardSize,
+            height: cardSize,
+            zIndex: 1,
+            transform: backTransform,
+            transition: stackTransition,
           }}
         >
-
-          {/* COVER CARD — always index 0 in the mobile track.
-              Always passes false for hover — there's no hover state on touch. */}
-          <div style={{ width: cardSize, height: cardSize, flexShrink: 0 }}>
-            {cover(false)}
-          </div>
-
-          {/* IMAGE FRAMES — indices 1–N in the track.
-              .map() creates one wrapper div per image frame, each with
-              the same cardSize dimensions and flex-shrink: 0. */}
-          {images.map((img, i) => (
-            <div
-              key={i}
-              style={{ width: cardSize, height: cardSize, flexShrink: 0 }}
-            >
-              {img}
-            </div>
-          ))}
-
+          {allCards[backIdx]}
         </div>
+
+        {/* ── MID CARD (position 1) ──────────────────────────────
+            One layer behind the top. Offset alternates with rotationSeed.
+            During exit: slides forward to become the new top. */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: cardLeft,
+            width: cardSize,
+            height: cardSize,
+            zIndex: 2,
+            transform: midTransform,
+            transition: stackTransition,
+          }}
+        >
+          {allCards[midIdx]}
+        </div>
+
+        {/* ── TOP CARD (position 0) ──────────────────────────────
+            The active card. Flat at full size at rest.
+            While dragging: follows finger with tilt (no transition).
+            On exit: rotates and fades off in the swipe direction (220ms).
+            On snap-back: returns to center (200ms).
+            willChange: transform only on this card — it's the active one. */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: cardLeft,
+            width: cardSize,
+            height: cardSize,
+            zIndex: 3,
+            transform: topTransform,
+            opacity: topOpacity,
+            transition: topTransition,
+            willChange: dragXRef.current !== 0 && !isAnimating ? 'transform' : 'auto',
+          }}
+        >
+          {allCards[topIdx]}
+        </div>
+
       </div>
     )
   }

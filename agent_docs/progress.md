@@ -10,6 +10,7 @@
 - [x] ProjectCover component (blue/indigo/purple gradient, isHovered title color switch, Tag + heading + description)
 - [x] ProjectImgFrame component (white gradient outer frame, checkerboard inner area, 400×400px)
 - [x] ProjectItem component (card-deck stack, 2-phase fan hover animation, per-card lift, cover render prop, ResizeObserver width tracking)
+- [x] Project Card component (mobile: physical card pile, swipe-to-shuffle, CSS var drag tracking, rotate+fade exit arc, true loop cycle)
 
 ### Phase 2 — Design Tokens
 - [x] Configure Tailwind theme with all color tokens (day + night)
@@ -32,7 +33,6 @@
 ## Up Next
 
 ### Phase 3 — Base Components
-- [ ] Project Card component
 - [ ] Footer component (placeholder — to be revisited)
 - [ ] Work Experience Row component
 - [ ] Work Experience Section component (composed of Work Experience Row, used on homepage + about page)
@@ -99,3 +99,5 @@
 - ProjectItem cover prop: render prop pattern `(hovered: boolean) => ReactNode` — allows the cover to receive ProjectItem's internal hover state (for title color change) without prop drilling or context.
 - ProjectItem fan formula: `fanStart = containerWidth × 0.17`, `fanSpread = (containerWidth - fanStart - 440) / (count - 1)`. Last frame's right edge lands exactly at containerWidth.
 - ProjectItem width measurement: `getBoundingClientRect().width` read immediately on mount (before ResizeObserver fires) to avoid zero-width fan on first hover.
+- Mobile stack interaction: physical card pile with swipe-to-shuffle. Drag tracked via CSS custom property (not state) to avoid re-renders during touch. Exit animation is rotate+fade arc, not a horizontal slide. Cards cycle in a true loop — nothing disappears.
+- Mobile breakpoint detection: switched from ResizeObserver container width to matchMedia('(max-width: 767px)') so ProjectItem and NavBar both trigger at the same 768px viewport boundary.

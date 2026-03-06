@@ -11,6 +11,8 @@
 - [x] ProjectImgFrame component (white gradient outer frame, checkerboard inner area, 400×400px)
 - [x] ProjectItem component (card-deck stack, 2-phase fan hover animation, per-card lift, cover render prop, ResizeObserver width tracking)
 - [x] Project Card component (mobile: physical card pile, swipe-to-shuffle, CSS var drag tracking, rotate+fade exit arc, true loop cycle)
+- [x] ProjectItemV2 component (pre-fanned cards always visible, text in separate column beside cards; desktop: 2-col grid 2fr/1fr, spread formula, per-card hover lift; mobile: swipe-to-shuffle pile, text below)
+- [x] ProjectItemV3 component (full-width card fan, text below; desktop: vertical flex column, cards span 100% container width, text at max-width 800px left-aligned; mobile: identical swipe pile to V2; breakpoint 767px matches NavBar; count-based spread formula; mobile title heading-2 semibold)
 
 ### Phase 2 — Design Tokens
 - [x] Configure Tailwind theme with all color tokens (day + night)
@@ -98,6 +100,14 @@
 - Shadow exception: --shadow-card added to globals.css. Only permitted shadow in the system. Used exclusively on ProjectCover to reinforce card-stack metaphor.
 - ProjectItem cover prop: render prop pattern `(hovered: boolean) => ReactNode` — allows the cover to receive ProjectItem's internal hover state (for title color change) without prop drilling or context.
 - ProjectItem fan formula: `fanStart = containerWidth × 0.17`, `fanSpread = (containerWidth - fanStart - 440) / (count - 1)`. Last frame's right edge lands exactly at containerWidth.
+- ProjectItemV2 spread formula: `left[i] = i × (columnWidth - 400) / (count - 1)`. Cards spread edge-to-edge across the 2fr column. Default CARD_W = 400px (square); real image widths deferred until layout measurement pass.
+- ProjectItemV2 column order: `gridTemplateColumns` flips between `2fr 1fr` and `1fr 2fr` with `textSide`; CSS `order` property swaps DOM order visually. Both needed so 2fr always hosts cards regardless of which side.
+- ProjectImgFrame extended with `sizing` prop: `'square'` (default, self-sized 400×400) | `'auto-width'` (fills parent container h-full w-full, parent controls dimensions). Used in ProjectItemV2.
+- ProjectItemV2 breakpoint: matchMedia('(max-width: 899px)') — 900px boundary, separate from ProjectItem's 768px.
+- ProjectItemV3 breakpoint: matchMedia('(max-width: 767px)') — matches NavBar, not V2's 899px. Text uses heading-1 (desktop) / heading-2 semibold (mobile); two-level text gap (tag→title: --spacing-1, group→description: --spacing-2).
+- ProjectItemV3 spread formula: count-based branching — 4–5 cards fill edge-to-edge (gap = (cw−CARD_W)/(count−1), startOffset=0); 2–3 cards centered pile (gap = cw/(count+1), pile centered); 1 card centered. Avoids sparse look on wide viewports with few cards.
+- ProjectItemV3 load fix: cards container uses opacity:0 until containerWidth>0 — prevents initial flash of cards animating from left edge (containerWidth starts at 0, making getCardLeft() return negative values on first render). No `transition` on left property.
+- ProjectItemV2 hover hit-area fix: two-div structure per card — outer div owns fixed 400×400 hit area + onMouseEnter/onMouseLeave + z-index; inner div owns visual transform (rotate + translateY lift). Prevents flicker caused by the lift animation moving the hit area away from the cursor (which triggered onMouseLeave → drop → re-enter loop, perceived as click-only behavior).
 - ProjectItem width measurement: `getBoundingClientRect().width` read immediately on mount (before ResizeObserver fires) to avoid zero-width fan on first hover.
 - Mobile stack interaction: physical card pile with swipe-to-shuffle. Drag tracked via CSS custom property (not state) to avoid re-renders during touch. Exit animation is rotate+fade arc, not a horizontal slide. Cards cycle in a true loop — nothing disappears.
 - Mobile breakpoint detection: switched from ResizeObserver container width to matchMedia('(max-width: 767px)') so ProjectItem and NavBar both trigger at the same 768px viewport boundary.

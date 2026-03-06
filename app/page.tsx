@@ -7,6 +7,8 @@ import Divider from '@/src/components/ui/Divider'
 import ProjectCover from '@/src/components/ProjectCover'
 import ProjectImgFrame from '@/src/components/ui/ProjectImgFrame'
 import ProjectItem from '@/src/components/ProjectItem'
+import ProjectItemV2 from '@/src/components/ProjectItemV2'
+import ProjectItemV3 from '@/src/components/ProjectItemV3'
 
 const ArrowRight = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -152,6 +154,49 @@ export default function Home() {
             <ProjectImgFrame key={1}><div className="placeholder-image w-full h-full" /></ProjectImgFrame>,
             <ProjectImgFrame key={2}><div className="placeholder-image w-full h-full" /></ProjectImgFrame>,
           ]}
+        />
+      </div>
+
+      {/* ── ProjectItemV2 preview ── */}
+      <div className="flex flex-col gap-6 w-full">
+        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ProjectItemV2 — textSide right (default), 3 placeholders</p>
+        <ProjectItemV2
+          tag="Case Study"
+          title="Detail Page Design"
+          description="Redesigning a dense information view for field ops teams across 12 time zones."
+          images={['', '', '']}
+        />
+      </div>
+
+      <div className="flex flex-col gap-6 w-full">
+        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ProjectItemV2 — textSide left, 3 placeholders</p>
+        <ProjectItemV2
+          tag="Snapshot"
+          title="Visual Archive"
+          description="A curated set of explorations and experiments from 2023–2024."
+          images={['', '', '']}
+          textSide="left"
+        />
+      </div>
+
+      {/* ── ProjectItemV3 preview ── */}
+      <div className="flex flex-col gap-6 w-full">
+        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ProjectItemV3 — full-width fan, text below, 3 placeholders</p>
+        <ProjectItemV3
+          tag="Case Study"
+          title="Detail Page Design"
+          description="Redesigning a dense information view for field ops teams across 12 time zones."
+          images={['', '', '']}
+        />
+      </div>
+
+      <div className="flex flex-col gap-6 w-full">
+        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ProjectItemV3 — 5 placeholders</p>
+        <ProjectItemV3
+          tag="Snapshot"
+          title="Visual Archive"
+          description="A curated set of explorations and experiments from 2023–2024."
+          images={['', '', '', '', '']}
         />
       </div>
 

@@ -46,7 +46,7 @@ import ProjectImgFrame from '@/src/components/ui/ProjectImgFrame'
 // Each card in the fan tilts at a fixed angle to create the stacked-deck look.
 // Index 0 (front card) is straight; cards behind alternate between right and left tilts.
 // ─────────────────────────────────────────────────────────
-const CARD_ROTATIONS = [0, 3, -4, 5, -3] as const
+const CARD_ROTATIONS = [2, -6, 1, -4, 7] as const
 
 
 // ─────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@ interface ProjectItemV3Props {
   // Short category label shown above the title. Monospace, uppercase-ish.
   tag: string
 
-  // Project name — large heading (heading-1 on desktop, heading-2 / 600 on mobile).
+  // Project name — large heading (heading-1-bold / 700 on desktop, heading-2-bold / 700 on mobile).
   title: string
 
   // Short description paragraph below the heading.
@@ -94,15 +94,23 @@ export default function ProjectItemV3({
 }: ProjectItemV3Props) {
 
   // ─────────────────────────────────────────────────────
-  // REF: CARDS CONTAINER ELEMENT
+  // REFS
   //
-  // A ref is a direct handle to a real DOM element in the browser.
-  // We attach this to the <div> that holds the cards so we can:
-  //   1. Measure its pixel width (needed for the spread formula)
-  //   2. Write CSS custom properties onto it (for mobile drag animation)
+  // Two separate refs to avoid a ResizeObserver feedback loop on mobile:
   //
-  // Starts as null; gets populated when the div mounts.
+  // measureRef — invisible full-width div, used ONLY for measuring available
+  //   container width. Always 100% wide, independent of card sizing math.
+  //
+  // containerRef — the cards pile div. Used ONLY for touch events and CSS
+  //   custom properties (--drag-x, --drag-rot). On mobile, this div has a
+  //   fixed pixel width (mobileCardSize + 48) so it can be flex-centered.
+  //   On desktop, this div is the full-width card fan area.
+  //
+  // Previously containerRef served both roles, but a fixed-width containerRef
+  // created a loop: ResizeObserver read containerRef.contentRect.width
+  // (excluding padding) → mobileCardSize shrank → containerRef shrank → repeat.
   // ─────────────────────────────────────────────────────
+  const measureRef   = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // The measured pixel width of the cards container.
@@ -165,10 +173,11 @@ export default function ProjectItemV3({
   // ─────────────────────────────────────────────────────
   // MOBILE CARD SIZE
   //
-  // Cards fill the full container width. We default to 280px while the
-  // container is still being measured, then jump to the real width.
+  // Cards are 48px narrower than the full content area so that when the pile
+  // is flex-centered, each side gets 24px of breathing room for rotated corners.
+  // Default 232px while measureRef hasn't been read yet (containerWidth = 0).
   // ─────────────────────────────────────────────────────
-  const mobileCardSize = containerWidth > 0 ? containerWidth : 280
+  const mobileCardSize = containerWidth > 0 ? containerWidth - 48 : 232
 
 
   // ── EFFECTS ───────────────────────────────────────────────────
@@ -177,11 +186,21 @@ export default function ProjectItemV3({
   // This is the right place for anything that touches the real DOM or browser APIs.
 
 
-  // Measure the cards container width on mount and whenever it changes.
-  // Re-runs when isMobile changes because containerRef moves to a different
-  // DOM element at the breakpoint switch (desktop vs mobile render path).
+  // Measure available container width on mount and whenever it changes.
+  //
+  // On mobile: observes measureRef — a full-width invisible div that's always
+  //   100% wide regardless of card sizing. This avoids the feedback loop that
+  //   occurred when containerRef was observed: containerRef has a fixed pixel
+  //   width (mobileCardSize + 48), so ResizeObserver read contentRect.width
+  //   (padding excluded) → mobileCardSize shrank → containerRef shrank → loop.
+  //
+  // On desktop: containerRef IS full-width, but measureRef is still in the DOM
+  //   (rendered above the centering wrapper) so the same effect works for both.
+  //
+  // Re-runs when isMobile changes because the element being observed is in a
+  // different part of the DOM between desktop and mobile render paths.
   useEffect(() => {
-    const el = containerRef.current
+    const el = measureRef.current
     if (!el) return
 
     // Immediate read — don't wait for the observer's first async callback.
@@ -231,6 +250,10 @@ export default function ProjectItemV3({
     setIsAnimating(false)
     setExitDir(null)
     setMidOffset(1)
+    // Reset containerWidth so mobile containerRef gets a fresh measurement.
+    // Without this, the desktop width carries over, making mobileCardSize too
+    // large and preventing the centering flex wrapper from having any effect.
+    setContainerWidth(0)
   }, [isMobile])
 
 
@@ -390,7 +413,7 @@ export default function ProjectItemV3({
   //
   // Identical to ProjectItemV2 mobile with two differences:
   //   1. Breakpoint is 767px instead of 899px.
-  //   2. Title uses `heading-2` (24px / weight 600) instead of `heading-3-bold`.
+  //   2. Title uses `heading-2-bold` (24px / weight 700) instead of `heading-3-bold`.
   // ─────────────────────────────────────────────────────
   if (isMobile) {
 
@@ -404,7 +427,7 @@ export default function ProjectItemV3({
     const backIdx = ((activeIndex + 2 * midOffset) % totalCards + totalCards) % totalCards
 
     // At-rest CSS transforms for each stack layer.
-    const pos0 = 'translateX(0) translateY(0) rotate(0deg) scale(1)'
+    const pos0 = 'translateX(0) translateY(0) rotate(-3deg) scale(1)'
     const pos1 = 'translateX(32px) translateY(28px) rotate(7deg) scale(0.92)'
     const pos2 = 'translateX(-24px) translateY(52px) rotate(-6deg) scale(0.84)'
 
@@ -422,7 +445,7 @@ export default function ProjectItemV3({
     } else {
       topTransform = isAnimating
         ? pos0
-        : 'translateX(var(--drag-x, 0px)) rotate(var(--drag-rot, 0deg))'
+        : 'translateX(var(--drag-x, 0px)) rotate(calc(-3deg + var(--drag-rot, 0deg)))'
     }
 
     // Transition ON during animations (smooth arc), OFF while dragging (instant follow).
@@ -443,19 +466,28 @@ export default function ProjectItemV3({
       // Single column: cards pile on top, text below. Gap of 8px between them.
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2)' }}>
 
+        {/* Invisible full-width div — only used for measuring available width.
+            Always 100% wide, height 0 so it takes no visual space.
+            ResizeObserver watches this instead of containerRef to avoid a
+            feedback loop (see the measurement useEffect above for details). */}
+        <div ref={measureRef} style={{ width: '100%', height: 0 }} />
+
         {/* ── CARDS PILE ─────────────────────────────────────────────
-            position: relative makes this the coordinate origin for the
-            three absolutely-positioned card layers inside.
-            overflow: hidden clips cards as they exit left or right.
-            Extra 60px of height prevents the back card's vertical offset
-            from being clipped at the bottom. */}
+            containerRef is mobileCardSize wide — 48px narrower than the full
+            content area. The centering flex wrapper above provides 24px of
+            margin on each side, giving rotated card corners room to breathe
+            without being clipped. Anything that crosses the viewport edge is
+            caught by body overflow-x:hidden in globals.css.
+            Extra 60px of height lets the back card's vertical offset be visible
+            without being cut off at the bottom. */}
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
         <div
           ref={containerRef}
           style={{
-            width: '100%',
+            width: mobileCardSize,
             height: mobileCardSize + 60,
             position: 'relative',
-            overflow: 'hidden',
+            overflow: 'visible',
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -516,15 +548,16 @@ export default function ProjectItemV3({
           </div>
 
         </div>
+        </div>
 
         {/* ── TEXT SECTION ─────────────────────────────────────────────
-            Mobile title is heading-2 (24px / 600) vs desktop heading-1 (32px).
+            Mobile title is heading-2-bold (24px / 700) vs desktop heading-1 (32px).
             All three items share the same --spacing-2 gap between them. */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2)' }}>
           <span className="label-2-medium" style={{ color: 'var(--color-text-subtle)' }}>
             {tag}
           </span>
-          <h2 className="heading-2" style={{ color: 'var(--color-text-heading)' }}>
+          <h2 className="heading-2-bold" style={{ color: 'var(--color-text-heading)' }}>
             {title}
           </h2>
           <p className="body-1" style={{ color: 'var(--color-text-body)' }}>
@@ -558,7 +591,10 @@ export default function ProjectItemV3({
   const desktopContent = (
 
     // Outer column: 40px gap (--spacing-10) between cards area and text area.
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-10)' }}>
+    // measureRef is attached here — this div is always 100% wide on desktop,
+    // so it serves as the width measurement source (same role as the invisible
+    // div in the mobile layout, but without needing a separate element).
+    <div ref={measureRef} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-10)' }}>
 
       {/* ── CARDS AREA ──────────────────────────────────────────────
           Full container width, 400px tall.
@@ -657,9 +693,9 @@ export default function ProjectItemV3({
           <span className="label-2-medium" style={{ color: 'var(--color-text-subtle)' }}>
             {tag}
           </span>
-          {/* heading-1 = Figtree 32px / weight 600. Larger than ProjectItemV2's heading-2-bold
+          {/* heading-1-bold = Figtree 32px / weight 700. Larger than ProjectItemV2's heading-2-bold
               because text sits on its own row here with more visual breathing room. */}
-          <h2 className="heading-1" style={{ color: 'var(--color-text-heading)' }}>
+          <h2 className="heading-1-bold" style={{ color: 'var(--color-text-heading)' }}>
             {title}
           </h2>
         </div>

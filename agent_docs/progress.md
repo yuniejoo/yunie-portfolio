@@ -12,7 +12,7 @@
 - [x] ProjectItem component (card-deck stack, 2-phase fan hover animation, per-card lift, cover render prop, ResizeObserver width tracking)
 - [x] Project Card component (mobile: physical card pile, swipe-to-shuffle, CSS var drag tracking, rotate+fade exit arc, true loop cycle)
 - [x] ProjectItemV2 component (pre-fanned cards always visible, text in separate column beside cards; desktop: 2-col grid 2fr/1fr, spread formula, per-card hover lift; mobile: swipe-to-shuffle pile, text below)
-- [x] ProjectItemV3 component (full-width card fan, text below; desktop: vertical flex column, cards span 100% container width, text at max-width 800px left-aligned; mobile: identical swipe pile to V2; breakpoint 767px matches NavBar; count-based spread formula; mobile title heading-2 semibold)
+- [x] ProjectItemV3 component (full-width card fan, text below; desktop: vertical flex column, cards span 100% container width, text at max-width 800px left-aligned, heading-1-bold title; mobile: swipe pile centered with 24px breathing room each side; breakpoint 767px matches NavBar; count-based spread formula; mobile title heading-2-bold; CARD_ROTATIONS [2, -6, 1, -4, 7]; front card -3deg base rotation; two-ref measurement pattern)
 
 ### Phase 2 — Design Tokens
 - [x] Configure Tailwind theme with all color tokens (day + night)
@@ -92,7 +92,7 @@
 - NavBar background: frosted glass via inline style (rgba(255,255,255,0.8) + backdrop-filter: blur(12px)) — not bg-surface-main token, because opacity control requires rgba().
 - NavBar positioning: fixed (not sticky) — layout.tsx body has pt-16 (64px) to compensate.
 - NavBar scroll behavior: hides on scroll down (>10px threshold), reappears on scroll up. useEffect + useRef(lastScrollY) tracks direction. transition-transform duration-200 ease-in-out. passive scroll listener for performance.
-- Mobile dropdown: right-aligned links, pb-4 only (no top padding), no background (inherits frosted glass from nav parent).
+- Mobile dropdown: right-aligned links, pb-4 only (no top padding), no background (inherits frosted glass from nav parent). Animates open/close with CSS grid trick (grid-template-rows: 0fr → 1fr, transition-[grid-template-rows] duration-200) — always mounted in HTML, never conditionally rendered.
 - Tag: `<span>` element (inline text content). outlined variant uses `inline-block` to ensure border-radius + background render correctly. Border color (stroke-border) is shared between both color modes — only fill and text differ.
 - Typography: No separate React components needed — .heading-1, .body-1, .label-2 etc. are CSS classes in globals.css applied directly to semantic HTML elements (h1, p, span, etc.).
 - Button default state text: corrected to --color-text-body — --color-text-muted was incorrectly introduced during implementation.
@@ -111,3 +111,7 @@
 - ProjectItem width measurement: `getBoundingClientRect().width` read immediately on mount (before ResizeObserver fires) to avoid zero-width fan on first hover.
 - Mobile stack interaction: physical card pile with swipe-to-shuffle. Drag tracked via CSS custom property (not state) to avoid re-renders during touch. Exit animation is rotate+fade arc, not a horizontal slide. Cards cycle in a true loop — nothing disappears.
 - Mobile breakpoint detection: switched from ResizeObserver container width to matchMedia('(max-width: 767px)') so ProjectItem and NavBar both trigger at the same 768px viewport boundary.
+- ProjectItemV3 mobile overflow: body gets `overflow-x: hidden` in globals.css — clamps any card corners that drift past the viewport edge during rotation/translation. Not applied at component level.
+- ProjectItemV3 mobile centering: flex `justifyContent: center` wrapper + `containerRef.width = mobileCardSize` (48px narrower than content area) → 24px centering margin each side doubles as breathing room for rotated card corners.
+- ProjectItemV3 two-ref pattern: `measureRef` (invisible 100%-wide div, ResizeObserver target) + `containerRef` (card pile div, touch events + CSS vars). Separating them eliminates a ResizeObserver feedback loop: containerRef has a fixed pixel width, so `contentRect.width` (padding excluded) would shrink it every cycle. measureRef always reports the true page width regardless of card sizing math.
+- ProjectItemV3 mobile base rotation: front card (pos0) has -3deg base baked into both the snap-back transform and the drag transform (`calc(-3deg + var(--drag-rot, 0deg))`), so the tilt persists at rest.

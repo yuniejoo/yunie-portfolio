@@ -25,7 +25,7 @@ export default function Home() {
   const [hovered2, setHovered2] = useState(false)
 
   return (
-    <main className="flex min-h-screen flex-col items-start justify-center gap-12 px-16 bg-white">
+    <main className="flex min-h-screen flex-col items-start justify-center gap-12 px-4 sm:px-16 bg-white overflow-x-hidden">
 
       {/* ── Divider preview ── */}
       <div className="flex flex-col gap-6 w-full">

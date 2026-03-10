@@ -37,7 +37,7 @@
 ## Up Next
 
 ### Phase 3 — Base Components
-- [x] Footer component (three-column layout — Navigation / Contact / Socials; Tag section headers; gradient background transparent→surface-subtle; arrow_outward icon with group-hover opacity; desktop: flex-row 3×flex-1 cols, 96px top/bottom padding; mobile: flex-col, 40px padding, 80px gap; replaced previous ASCII art version)
+- [x] Footer component (three-column layout — Navigation / Contact / Socials; Tag section headers; gradient transparent→surface-subtle→100%; arrow_outward icon with group-hover opacity; desktop: flex-row 3×flex-1 cols, 96px top/bottom, 16px left/right; mobile: flex-col, 40px top/bottom, 16px left/right, 80px gap; replaced previous ASCII art version)
 
 ### Phase 4 — Page Layouts
 - [ ] Homepage layout (hero slot + intro + work cards + experience + footer)

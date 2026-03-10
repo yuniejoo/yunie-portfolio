@@ -55,13 +55,13 @@ export default function Footer() {
     // be treated as plain text. Inline style lets us reference the token.
     //
     // Padding responsive:
-    //   Mobile:  40px on all sides (p-10 = --spacing-10)
+    //   Mobile:  40px top/bottom (py-10) + 16px left/right (px-4)
     //   Desktop: 96px top/bottom (py-24) + 16px left/right (px-4)
     <footer
       style={{
         background: 'linear-gradient(to bottom, transparent 0%, var(--color-surface-subtle) 50%, var(--color-surface-subtle) 100%)',
       }}
-      className="p-10 md:py-24 md:px-4"
+      className="px-4 py-10 md:py-24 md:px-4"
     >
 
       {/*

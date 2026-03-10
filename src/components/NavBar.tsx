@@ -23,8 +23,9 @@
 
   Mobile menu state:
   useState tracks whether the dropdown is open (true) or closed (false).
-  The dropdown is conditionally rendered — when closed, it's completely
-  removed from the HTML, not just hidden with CSS.
+  The dropdown is always in the HTML — it animates open/close using the
+  CSS grid trick (grid-template-rows: 0fr → 1fr) rather than being
+  conditionally rendered. This gives a smooth slide animation.
 */
 
 // useState: a React hook that gives a component "memory" — stores a value
@@ -329,38 +330,51 @@ export default function NavBar() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────
-          MOBILE DROPDOWN — conditionally rendered when menu is open.
+          MOBILE DROPDOWN — always mounted, animates open/close with
+          the CSS grid trick.
 
-          {isMenuOpen && <div>...</div>}
-            → Only adds this to the page when isMenuOpen is true.
-              When false, it's completely removed from the HTML
-              (not just hidden) — cleaner for accessibility and performance.
+          How the animation works:
+            The outer div uses display:grid with grid-template-rows toggling
+            between '0fr' (collapsed, zero height) and '1fr' (expanded, full
+            natural height). CSS can animate grid-template-rows, so the nav
+            visually slides open and closed without needing to know pixel heights.
 
-          md:hidden → safety fallback if CSS loads before JS.
-          pb-4      → 16px bottom padding. No top padding — the top bar's
-                      bottom padding already provides the gap.
-          flex flex-col items-end → stacks links vertically, right-aligned.
-          gap-2     → 8px gap between links.
+            The middle overflow-hidden div is required — it's what actually
+            gets clamped to zero height when grid-template-rows is '0fr'.
+            Without it, the content would still be visible at 0fr.
+
+            The inner content div is unchanged from the original.
+
+          transition-[grid-template-rows] duration-200 ease-in-out
+            → Animates only the grid rows property over 200ms — matches
+              the project's animation standard and keeps it GPU-friendly.
+
+          md:hidden → hides the whole wrapper on desktop (768px+).
           ───────────────────────────────────────────────────────── */}
-      {isMenuOpen && (
-        <div className="md:hidden px-4 pb-4 flex flex-col items-end gap-2">
+      <div
+        className="md:hidden overflow-hidden transition-[grid-template-rows] duration-200 ease-in-out"
+        style={{ display: 'grid', gridTemplateRows: isMenuOpen ? '1fr' : '0fr' }}
+      >
+        <div className="overflow-hidden">
+          <div className="px-4 pb-4 flex flex-col items-end gap-2">
 
-          <Link
-            href="/"
-            className={`${navLinkBase} ${isProjectsActive ? navLinkActive : navLinkDefault}`}
-          >
-            PROJECTS
-          </Link>
+            <Link
+              href="/"
+              className={`${navLinkBase} ${isProjectsActive ? navLinkActive : navLinkDefault}`}
+            >
+              PROJECTS
+            </Link>
 
-          <Link
-            href="/about"
-            className={`${navLinkBase} ${isAboutActive ? navLinkActive : navLinkDefault}`}
-          >
-            ABOUT ME
-          </Link>
+            <Link
+              href="/about"
+              className={`${navLinkBase} ${isAboutActive ? navLinkActive : navLinkDefault}`}
+            >
+              ABOUT ME
+            </Link>
 
+          </div>
         </div>
-      )}
+      </div>
 
     </nav>
   )

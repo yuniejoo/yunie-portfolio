@@ -13,6 +13,8 @@
 - [x] Project Card component (mobile: physical card pile, swipe-to-shuffle, CSS var drag tracking, rotate+fade exit arc, true loop cycle)
 - [x] ProjectItemV2 component (pre-fanned cards always visible, text in separate column beside cards; desktop: 2-col grid 2fr/1fr, spread formula, per-card hover lift; mobile: swipe-to-shuffle pile, text below)
 - [x] ProjectItemV3 component (full-width card fan, text below; desktop: vertical flex column, cards span 100% container width, text at max-width 800px left-aligned, heading-1-bold title; mobile: swipe pile centered with 24px breathing room each side; breakpoint 767px matches NavBar; count-based spread formula; mobile title heading-2-bold; CARD_ROTATIONS [2, -6, 1, -4, 7]; front card -3deg base rotation; two-ref measurement pattern)
+- [x] ExperienceRow component (ui/ExperienceRow.tsx — single resume row; desktop: company+position left / period right on one line, description below, 4px gap; mobile: period→company/position→description stacked, 4px gap; breakpoint 767px; position conditionally rendered — empty string renders nothing; colors: company=heading, position+period=subtle, description=body)
+- [x] ExperienceSection component (ExperienceSection.tsx — hardcoded Work + Education groups; Tag label + ExperienceRow list per group; 32px gap within groups, 80px gap between groups; data arrays separated from layout; uses .map() for rows)
 
 ### Phase 2 — Design Tokens
 - [x] Configure Tailwind theme with all color tokens (day + night)
@@ -35,9 +37,7 @@
 ## Up Next
 
 ### Phase 3 — Base Components
-- [ ] Footer component (placeholder — to be revisited)
-- [ ] Work Experience Row component
-- [ ] Work Experience Section component (composed of Work Experience Row, used on homepage + about page)
+- [x] Footer component (three-column layout — Navigation / Contact / Socials; Tag section headers; gradient background transparent→surface-subtle; arrow_outward icon with group-hover opacity; desktop: flex-row 3×flex-1 cols, 96px top/bottom padding; mobile: flex-col, 40px padding, 80px gap; replaced previous ASCII art version)
 
 ### Phase 4 — Page Layouts
 - [ ] Homepage layout (hero slot + intro + work cards + experience + footer)
@@ -115,3 +115,10 @@
 - ProjectItemV3 mobile centering: flex `justifyContent: center` wrapper + `containerRef.width = mobileCardSize` (48px narrower than content area) → 24px centering margin each side doubles as breathing room for rotated card corners.
 - ProjectItemV3 two-ref pattern: `measureRef` (invisible 100%-wide div, ResizeObserver target) + `containerRef` (card pile div, touch events + CSS vars). Separating them eliminates a ResizeObserver feedback loop: containerRef has a fixed pixel width, so `contentRect.width` (padding excluded) would shrink it every cycle. measureRef always reports the true page width regardless of card sizing math.
 - ProjectItemV3 mobile base rotation: front card (pos0) has -3deg base baked into both the snap-back transform and the drag transform (`calc(-3deg + var(--drag-rot, 0deg))`), so the tilt persists at rest.
+- ExperienceRow separator: the "/" is part of the `position` prop string (e.g. "/ Product Designer"), not a hardcoded element. Figma "Separator" node is `visible: false`. Education entries pass `position=""` — the span is conditionally rendered with `{position && <span>…</span>}` so nothing renders when empty.
+- ExperienceRow colors: company = `--color-text-heading`, position + period = `--color-text-subtle` (gray/400, lighter), description = `--color-text-body` (gray/500, mid). Two-level hierarchy: dark anchor → light metadata → mid body text.
+- ExperienceRow mobile order: period renders first (above company/position) on mobile — matches Figma. Achieved by rendering period twice: once as `md:hidden` above the top row (mobile-first), once as `hidden md:inline` inside the top row (desktop). `display:none` removes each copy from layout at the appropriate breakpoint.
+- ExperienceSection data pattern: content stored as plain object arrays (`workEntries`, `educationEntries`) above the component function, separated from JSX. Easy to update without touching layout code. `.map()` + `{...entry}` spread renders rows from data.
+- CursorLabel: `isVisible` prop controlled by parent (hover state). Global `mousemove` listener tracks cursor position. `hidden md:block` hides on mobile. Fixed position `z-[100]`, offset +12px right / -8px up from cursor. `pointer-events-none` prevents blocking clicks.
+- ArtworkFrame: localStorage key `yunie-gallery-seen` persists seen artwork IDs. Mount effect reads + writes (marks piece 0 as seen). Click handler does fade-out (setArtVisible false) → 350ms setTimeout → index advance → fade-in. `isTransitioning` guard prevents stacked clicks. `allSeen` message shows when seenIds.size >= 6. Art fields start empty — populate via `npx ts-node scripts/generate-art/[name].ts`.
+- Footer: `<footer>` + `<nav>` + `<address>` semantic HTML. Email is a `<button>` (not `<a>`) — no arrow, clipboard API copy. `<address>` default italic reset via `fontStyle: normal`. Social links use ↗ text character. Two CursorLabel instances (email + social) — can't both be visible simultaneously. Sign-off outside `<nav>` (not navigation). ASCII generation scripts in `scripts/generate-art/` — need `npm install @anthropic-ai/sdk` + ts-node + ANTHROPIC_API_KEY.

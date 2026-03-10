@@ -552,14 +552,17 @@ export default function ProjectItemV3({
 
         {/* ── TEXT SECTION ─────────────────────────────────────────────
             Mobile title is heading-2-bold (24px / 700) vs desktop heading-1 (32px).
-            All three items share the same --spacing-2 gap between them. */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2)' }}>
-          <span className="label-2-medium" style={{ color: 'var(--color-text-subtle)' }}>
-            {tag}
-          </span>
-          <h2 className="heading-2-bold" style={{ color: 'var(--color-text-heading)' }}>
-            {title}
-          </h2>
+            Outer gap (--spacing-1 / 4px): between tag+title group and description.
+            Inner gap: 0px between tag and title. */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-1)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <span className="label-2-medium" style={{ color: 'var(--color-text-subtle)' }}>
+              {tag}
+            </span>
+            <h2 className="heading-2-bold" style={{ color: 'var(--color-text-heading)' }}>
+              {title}
+            </h2>
+          </div>
           <p className="body-1" style={{ color: 'var(--color-text-body)' }}>
             {description}
           </p>
@@ -684,12 +687,12 @@ export default function ProjectItemV3({
           width: '100%',
           display: 'flex',
           flexDirection: 'column',
-          gap: 'var(--spacing-2)',
+          gap: 'var(--spacing-1)',
         }}
       >
 
-        {/* Inner group: tag label + title heading, tightly spaced */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-1)' }}>
+        {/* Inner group: tag label + title heading, no gap */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           <span className="label-2-medium" style={{ color: 'var(--color-text-subtle)' }}>
             {tag}
           </span>

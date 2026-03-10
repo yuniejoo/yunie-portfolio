@@ -9,6 +9,8 @@ import ProjectImgFrame from '@/src/components/ui/ProjectImgFrame'
 import ProjectItem from '@/src/components/ProjectItem'
 import ProjectItemV2 from '@/src/components/ProjectItemV2'
 import ProjectItemV3 from '@/src/components/ProjectItemV3'
+import ExperienceRow from '@/src/components/ui/ExperienceRow'
+import ExperienceSection from '@/src/components/ExperienceSection'
 
 const ArrowRight = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -198,6 +200,33 @@ export default function Home() {
           description="A curated set of explorations and experiments from 2023–2024."
           images={['', '', '', '', '']}
         />
+      </div>
+
+
+      {/* ── ExperienceRow preview ── */}
+      <div className="flex flex-col gap-6 w-full">
+        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ExperienceRow component — resize to see mobile layout</p>
+        <div className="flex flex-col gap-8 w-full">
+          <ExperienceRow
+            company="Anthropic"
+            position="/ Product Designer"
+            period="Mar 2024 – Present"
+            description="Designing interfaces and systems for frontier AI products used by millions."
+          />
+          <ExperienceRow
+            company="Shopify"
+            position="/ Product Design Intern"
+            period="Sep 2022 – Dec 2022"
+            description="Contributed to the merchant dashboard redesign across the checkout experience."
+          />
+        </div>
+      </div>
+
+
+      {/* ── ExperienceSection preview ── */}
+      <div className="flex flex-col gap-6 w-full">
+        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ExperienceSection component</p>
+        <ExperienceSection />
       </div>
 
     </main>

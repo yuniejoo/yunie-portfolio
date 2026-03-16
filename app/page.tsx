@@ -55,7 +55,7 @@ export default function HomePage() {
             Node renders a dashed placeholder box — full width, 240px tall.
             No text or labels here — it's a pure visual slot. */}
         <section>
-          <Node width="100%" height={240} />
+          <Node height={240} />
         </section>
 
         {/* PROJECTS

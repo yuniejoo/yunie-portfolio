@@ -214,6 +214,9 @@
   --spacing-16: 64px;
   --spacing-20: 80px;
   --spacing-24: 96px;
+  --spacing-25: 100px;
+  --spacing-45: 180px;
+  --spacing-50: 200px;
 
   /* ── Typography scale ──────────────────────────────────
      Generates: text-xs, text-sm, text-base, etc.        */

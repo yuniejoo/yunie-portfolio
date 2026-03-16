@@ -1,234 +1,102 @@
-'use client'
+/*
+  HOMEPAGE — app/page.tsx
+  -----------------------
+  This is the homepage layout. It's a page assembly file — no new UI is
+  invented here. Every element comes from an existing component.
 
-import { useState } from 'react'
-import Button from '@/src/components/ui/Button'
-import Tag from '@/src/components/ui/Tag'
+  Structure:
+    <main>
+      <div>  ← max-width content wrapper (centers everything, adds padding)
+        <section>  Hero slot (placeholder Node — pixel art scene added in Phase 5)
+        <section>  Projects (Divider + 3× ProjectItemV3)
+        <section>  Experiences (Divider + ExperienceSection)
+      </div>
+    </main>
+    NavBar and Footer are NOT rendered here — they live in app/layout.tsx
+    and wrap every page automatically.
+
+  Spacing logic:
+    - pt-25/pb-25 (100px) on mobile,  pt-50/pb-50 (200px) on desktop
+    - gap-25 (100px) between sections on mobile, gap-50 (200px) on desktop
+    - gap-45 (180px) between Divider and ExperienceSection (same at all breakpoints)
+
+  Why is layout.tsx's pt-16 relevant here?
+    layout.tsx adds pt-16 (64px) to the body so content clears the fixed NavBar.
+    The pt-25/pt-50 on <main> adds *on top of* that — it's the breathing room
+    between the NavBar and the first section of the page.
+*/
+
+// No 'use client' needed — this page has no interactivity, no state, no event handlers.
+// It's a pure server component: React renders it once on the server and sends HTML.
+
+import Node from '@/src/components/ui/Node'
 import Divider from '@/src/components/ui/Divider'
-import ProjectCover from '@/src/components/ProjectCover'
-import ProjectImgFrame from '@/src/components/ui/ProjectImgFrame'
-import ProjectItem from '@/src/components/ProjectItem'
-import ProjectItemV2 from '@/src/components/ProjectItemV2'
 import ProjectItemV3 from '@/src/components/ProjectItemV3'
-import ExperienceRow from '@/src/components/ui/ExperienceRow'
 import ExperienceSection from '@/src/components/ExperienceSection'
 
-const ArrowRight = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-)
+// Footer and NavBar are NOT imported here — they live in app/layout.tsx
+// and wrap every page automatically. Adding them here would render them twice.
 
-export default function Home() {
-  // One hover state per card — each tracks whether that specific card is being hovered.
-  // useState(false) means "start as not hovered". When the mouse enters the wrapper div,
-  // we flip it to true; when it leaves, we flip it back to false.
-  const [hovered0, setHovered0] = useState(false)
-  const [hovered1, setHovered1] = useState(false)
-  const [hovered2, setHovered2] = useState(false)
-
+export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-start justify-center gap-12 px-4 sm:px-16 bg-white overflow-x-hidden">
+    // layout.tsx renders NavBar and Footer around {children} for every page.
+    // This component only needs to return <main> — no fragment wrapper needed.
+    <main className="pt-25 pb-25 md:pt-50 md:pb-50">
 
-      {/* ── Divider preview ── */}
-      <div className="flex flex-col gap-6 w-full">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">Divider component</p>
-        <Divider />
-      </div>
+      {/* CONTENT WRAPPER
+          Constrains content to 1200px max-width and centers it horizontally.
+          px-4 = 16px side padding on mobile, px-8 = 32px on desktop (md:).
+          flex flex-col stacks the three sections vertically.
+          gap-25/gap-50 creates the large breathing room between sections. */}
+      <div className="max-w-[1200px] mx-auto px-4 md:px-8 flex flex-col gap-25 md:gap-50">
 
-      {/* ── Tag preview ── */}
-      <div className="flex flex-col gap-6">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">Tag component — all variants</p>
-        <div className="flex flex-row gap-6 items-center">
-          <Tag variant="minimal" color="default">Case Study</Tag>
-          <Tag variant="minimal" color="subtle">Case Study</Tag>
-          <Tag variant="minimal" color="primary">Case Study</Tag>
-          <Tag variant="outlined" color="default">Case Study</Tag>
-          <Tag variant="outlined" color="subtle">Case Study</Tag>
-          <Tag variant="outlined" color="primary">Case Study</Tag>
-        </div>
-      </div>
+        {/* HERO SLOT
+            Placeholder for the Calgary pixel art hero (built in Phase 5).
+            Node renders a dashed placeholder box — full width, 240px tall.
+            No text or labels here — it's a pure visual slot. */}
+        <section>
+          <Node width="100%" height={240} />
+        </section>
 
-      <div className="flex flex-col gap-2">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">Primary — Default</p>
-        <Button type="primary" isSelected={false}>Work</Button>
-      </div>
+        {/* PROJECTS
+            Three project entries. Divider first, then 3× ProjectItemV3.
+            gap-25/gap-50 spaces all children (Divider + 3 cards) evenly.
 
-      <div className="flex flex-col gap-2">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">Primary — Selected</p>
-        <Button type="primary" isSelected={true}>Work</Button>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">Primary — Default + Icon</p>
-        <Button type="primary" isSelected={false} hasIcon icon={<ArrowRight />}>Work</Button>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">Primary — Selected + Icon</p>
-        <Button type="primary" isSelected={true} hasIcon icon={<ArrowRight />}>Work</Button>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">Secondary — Default</p>
-        <Button type="secondary" isSelected={false}>Case Study</Button>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">Secondary — Selected</p>
-        <Button type="secondary" isSelected={true}>Case Study</Button>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">Secondary — Default + Icon</p>
-        <Button type="secondary" isSelected={false} hasIcon icon={<ArrowRight />}>Case Study</Button>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">Secondary — Selected + Icon</p>
-        <Button type="secondary" isSelected={true} hasIcon icon={<ArrowRight />}>Case Study</Button>
-      </div>
-
-      {/* ── ProjectImgFrame preview ── */}
-      <div className="flex flex-col gap-6 w-full">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ProjectImgFrame component — with placeholder image inside</p>
-        <div className="flex flex-row gap-6 flex-wrap">
-          <ProjectImgFrame>
-            <div className="placeholder-image w-full h-full" />
-          </ProjectImgFrame>
-        </div>
-      </div>
-
-      {/* ── ProjectCover preview ── */}
-      <div className="flex flex-col gap-6 w-full">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ProjectCover component — all three color variants</p>
-        {/* py-12 gives breathing room so the rotated cards don't clip at the edges */}
-        <div className="flex flex-row gap-12 flex-wrap py-12">
-
-          {/* Each card is wrapped in a div that handles rotation and hover detection.
-              Default: rotate(-2deg). Hovered: rotate(-4deg).
-              The transition animates the rotation change smoothly.
-              onMouseEnter fires when the cursor enters the div → sets hovered to true.
-              onMouseLeave fires when the cursor leaves → sets hovered back to false. */}
-          <div
-            onMouseEnter={() => setHovered0(true)}
-            onMouseLeave={() => setHovered0(false)}
-            style={{ transform: hovered0 ? 'rotate(-4deg)' : 'rotate(-2deg)', transition: 'transform 0.2s ease' }}
-          >
-            <ProjectCover color="blue" tag="Case Study" title="Detail Page Design" description="Redesigning a dense information view for field ops teams across 12 time zones." isHovered={hovered0} />
-          </div>
-
-          <div
-            onMouseEnter={() => setHovered1(true)}
-            onMouseLeave={() => setHovered1(false)}
-            style={{ transform: hovered1 ? 'rotate(-4deg)' : 'rotate(-2deg)', transition: 'transform 0.2s ease' }}
-          >
-            <ProjectCover color="indigo" tag="Case Study" title="Permission System" description="A ground-up access control system built for a 200-person enterprise." isHovered={hovered1} />
-          </div>
-
-          <div
-            onMouseEnter={() => setHovered2(true)}
-            onMouseLeave={() => setHovered2(false)}
-            style={{ transform: hovered2 ? 'rotate(-4deg)' : 'rotate(-2deg)', transition: 'transform 0.2s ease' }}
-          >
-            <ProjectCover color="purple" tag="Snapshot" title="Visual Archive" description="A curated set of explorations and experiments from 2023–2024." isHovered={hovered2} />
-          </div>
-
-        </div>
-      </div>
-
-
-      {/* ── ProjectItem preview ── */}
-      <div className="flex flex-col gap-6 w-full">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ProjectItem — seed 1, 3 frames (hover me)</p>
-        <ProjectItem
-          rotationSeed={1}
-          cover={(hovered) => (
-            <ProjectCover
-              color="blue"
-              tag="Case Study"
-              title="Detail Page"
-              description="Redesigning a dense information view for field ops teams."
-              isHovered={hovered}
-            />
-          )}
-          images={[
-            <ProjectImgFrame key={0}><div className="placeholder-image w-full h-full" /></ProjectImgFrame>,
-            <ProjectImgFrame key={1}><div className="placeholder-image w-full h-full" /></ProjectImgFrame>,
-            <ProjectImgFrame key={2}><div className="placeholder-image w-full h-full" /></ProjectImgFrame>,
-          ]}
-        />
-      </div>
-
-      {/* ── ProjectItemV2 preview ── */}
-      <div className="flex flex-col gap-6 w-full">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ProjectItemV2 — textSide right (default), 3 placeholders</p>
-        <ProjectItemV2
-          tag="Case Study"
-          title="Detail Page Design"
-          description="Redesigning a dense information view for field ops teams across 12 time zones."
-          images={['', '', '']}
-        />
-      </div>
-
-      <div className="flex flex-col gap-6 w-full">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ProjectItemV2 — textSide left, 3 placeholders</p>
-        <ProjectItemV2
-          tag="Snapshot"
-          title="Visual Archive"
-          description="A curated set of explorations and experiments from 2023–2024."
-          images={['', '', '']}
-          textSide="left"
-        />
-      </div>
-
-      {/* ── ProjectItemV3 preview ── */}
-      <div className="flex flex-col gap-6 w-full">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ProjectItemV3 — full-width fan, text below, 3 placeholders</p>
-        <ProjectItemV3
-          tag="Case Study"
-          title="Detail Page Design"
-          description="Redesigning a dense information view for field ops teams across 12 time zones."
-          images={['', '', '']}
-        />
-      </div>
-
-      <div className="flex flex-col gap-6 w-full">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ProjectItemV3 — 5 placeholders</p>
-        <ProjectItemV3
-          tag="Snapshot"
-          title="Visual Archive"
-          description="A curated set of explorations and experiments from 2023–2024."
-          images={['', '', '', '', '']}
-        />
-      </div>
-
-
-      {/* ── ExperienceRow preview ── */}
-      <div className="flex flex-col gap-6 w-full">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ExperienceRow component — resize to see mobile layout</p>
-        <div className="flex flex-col gap-8 w-full">
-          <ExperienceRow
-            company="Anthropic"
-            position="/ Product Designer"
-            period="Mar 2024 – Present"
-            description="Designing interfaces and systems for frontier AI products used by millions."
+            WHY props are required: tag, title, and description have no `?` in
+            the TypeScript interface, so they are required. Without `images`,
+            the component defaults to count=1 → single centered card instead
+            of the fan spread. Placeholder values are used until Phase 4/5. */}
+        <section className="flex flex-col gap-25 md:gap-50">
+          <Divider />
+          <ProjectItemV3
+            tag="Case Study"
+            title="Title"
+            description="Description"
+            images={['', '', '']}
           />
-          <ExperienceRow
-            company="Shopify"
-            position="/ Product Design Intern"
-            period="Sep 2022 – Dec 2022"
-            description="Contributed to the merchant dashboard redesign across the checkout experience."
+          <ProjectItemV3
+            tag="Case Study"
+            title="Title"
+            description="Description"
+            images={['', '', '']}
           />
-        </div>
+          <ProjectItemV3
+            tag="Case Study"
+            title="Title"
+            description="Description"
+            images={['', '', '']}
+          />
+        </section>
+
+        {/* EXPERIENCES
+            Divider then ExperienceSection.
+            gap-45 (180px) is fixed — no md: variant, same on both breakpoints. */}
+        <section className="flex flex-col gap-45">
+          <Divider />
+          <ExperienceSection />
+        </section>
+
       </div>
-
-
-      {/* ── ExperienceSection preview ── */}
-      <div className="flex flex-col gap-6 w-full">
-        <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">ExperienceSection component</p>
-        <ExperienceSection />
-      </div>
-
     </main>
   )
 }

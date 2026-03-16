@@ -59,7 +59,7 @@ export default function Footer() {
     //   Desktop: 96px top/bottom (py-24) + 16px left/right (px-4)
     <footer
       style={{
-        background: 'linear-gradient(to bottom, transparent 0%, var(--color-surface-subtle) 50%, var(--color-surface-subtle) 100%)',
+        background: 'linear-gradient(to bottom, rgba(250,250,250,0) 0%, var(--color-surface-subtle) 50%, var(--color-surface-subtle) 100%)',
       }}
       className="px-4 py-10 md:py-24 md:px-4"
     >
